@@ -1,0 +1,103 @@
+mql5
+//+------------------------------------------------------------------+
+//|                                                   Optimized Trend Track OTT|
+//|                        Copyright 2021, Forex Robot Easy Team                  |
+//|                                             https://www.forexroboteasy.com/ |
+//+------------------------------------------------------------------+
+
+// Define input parameters
+input int period = 14; // Period/Length parameter
+input double ottPercent = 0.5; // OTT percent parameter
+
+//+------------------------------------------------------------------+
+//| Custom indicator initialization function                         |
+//+------------------------------------------------------------------+
+int OnInit()
+{
+   // Register the indicator
+   IndicatorSetString(INDICATOR_SHORTNAME, 'Optimized Trend Track OTT');
+
+   return(INIT_SUCCEEDED);
+}
+
+//+------------------------------------------------------------------+
+//| Custom indicator iteration function                              |
+//+------------------------------------------------------------------+
+int OnCalculate(const int rates_total,
+                const int prev_calculated,
+                const datetime &time[],
+                const double &open[],
+                const double &high[],
+                const double &low[],
+                const double &close[],
+                const long &tick_volume[],
+                const long &volume[],
+                const int &spread[])
+{
+   // Calculate the OTT value
+   double ottValue = calculateOTT(period, close);
+
+   // Determine the market trend based on the OTT value
+   int trend = determineTrend(close, ottValue);
+
+   // Adjust the sensitivity of the OTT based on the period/length parameter
+   double adjustedOttValue = ottValue * ottPercent;
+
+   // Check if the price is above the OTT to identify ascending trends
+   bool isAscendingTrend = close[0] > adjustedOttValue;
+
+   // Check if the price is below the OTT to identify descending trends
+   bool isDescendingTrend = close[0] < adjustedOttValue;
+
+   // Output the result
+   if (isAscendingTrend)
+   {
+      Print('The market trend is upward.');
+   }
+   else if (isDescendingTrend)
+   {
+      Print('The market trend is downward.');
+   }
+   else
+   {
+      Print('The market trend is neutral.');
+   }
+
+   return(rates_total);
+}
+
+//+------------------------------------------------------------------+
+//| Function to calculate the OTT value                               |
+//+------------------------------------------------------------------+
+double calculateOTT(const int period, const double &close[])
+{
+   // Calculate the OTT value using the specified period/length
+   double ottValue = 0;
+   for (int i = 0; i < period; i++)
+   {
+      ottValue += close[i];
+   }
+   ottValue /= period;
+
+   return ottValue;
+}
+
+//+------------------------------------------------------------------+
+//| Function to determine the market trend based on the OTT value     |
+//+------------------------------------------------------------------+
+int determineTrend(const double &close[], const double ottValue)
+{
+   // Determine the market trend based on the OTT value
+   if (close[0] > ottValue)
+   {
+      return 1; // Upward trend
+   }
+   else if (close[0] < ottValue)
+   {
+      return -1; // Downward trend
+   }
+   else
+   {
+      return 0; // Neutral trend
+   }
+}
